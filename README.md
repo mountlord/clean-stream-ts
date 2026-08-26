@@ -28,23 +28,31 @@ Input #0, png_pipe, from 'movie.mkv':
 
 Point it at a folder. Repairable files queue themselves; everything else stays on the left.
 
-![Scanning a folder](docs/screen-1-scan.png)
+<p align="center">
+  <img src="docs/screen-1-scan.png" alt="CleanStreamTS — scanning a folder" width="900"/>
+</p>
 
 Two clean files sit in **Remaining** — an ordinary MP4, and a `.ts` that was downloaded with the prefix already stripped, so it needs nothing. The three on the right each show where their real video starts: `payload @ 205` for the older decoy variant, and the file sizes make clear these are real 2–5 GB videos, not toys.
 
 Tick **Include subfolders** and the scan re-runs by itself:
 
-![Including subfolders](docs/screen-2-subfolders.png)
+<p align="center">
+  <img src="docs/screen-2-subfolders.png" alt="Including subfolders — candidates keep their subfolder in the label" width="900"/>
+</p>
 
 Files below the scan folder keep their subfolder in the label, so two files with the same name in different folders never look identical. Note `payload @ 70` on the newest one — the decoy's size varies, which is why nothing here uses a hardcoded offset.
 
 Cleaning writes a copy beside each original and says what it did:
 
-![Cleaning in progress](docs/screen-3-cleaning.png)
+<p align="center">
+  <img src="docs/screen-3-cleaning.png" alt="Cleaning in progress" width="900"/>
+</p>
 
 Then rescan:
 
-![After cleaning](docs/screen-4-complete.png)
+<p align="center">
+  <img src="docs/screen-4-complete.png" alt="After cleaning — already-cleaned files are skipped on rescan" width="900"/>
+</p>
 
 The queue is empty and the log reads *"2 file(s) were already cleaned earlier; skipped."* Run it again over the same folder and it does nothing — which is what makes it safe to point at a whole collection, and lets an interrupted run resume instead of redoing finished work.
 
