@@ -1,0 +1,45 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cleanstreamts"
+dynamic = ["version"]
+description = "Detect and remove tracker/decoy payloads prepended to downloaded transport streams."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "mountlord" }]
+keywords = ["video", "hls", "mpeg-ts", "repair", "nvdec", "ffmpeg"]
+classifiers = [
+    "Environment :: Win32 (MS Windows)",
+    "Intended Audience :: End Users/Desktop",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Topic :: Multimedia :: Video",
+]
+dependencies = [
+    "flask>=3.0",
+    "pywebview>=5.0",
+    "Pillow>=9.0",
+]
+
+[project.optional-dependencies]
+build = ["pyinstaller>=6.10"]
+
+[project.scripts]
+cleanstreamts = "cleanstreamts.cli:main"
+CleanStreamTS = "cleanstreamts.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/mountlord/clean-stream-ts"
+Issues = "https://github.com/mountlord/clean-stream-ts/issues"
+
+[tool.setuptools]
+packages = ["cleanstreamts"]
+
+[tool.setuptools.dynamic]
+version = { attr = "cleanstreamts.__version__" }
+
+[tool.setuptools.package-data]
+cleanstreamts = ["templates/*.html", "static/css/*.css", "static/js/*.js"]

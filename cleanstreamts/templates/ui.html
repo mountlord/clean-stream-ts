@@ -1,0 +1,102 @@
+<!-- cleanstreamts/templates/ui.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>{{ app_name }} {{ version }}</title>
+<link rel="stylesheet" href="/static/css/app.css?v={{ cachebust }}">
+</head>
+<body>
+
+<div class="app" data-cli="{{ cli_name }}">
+
+  <div class="hdr">
+    <h1>Clean Stream<span class="ver">v{{ version }}</span></h1>
+    <p>Scan a folder for files carrying a <strong>tracker/decoy payload</strong> ahead of the real
+       video stream, then write clean copies. Originals are never modified &mdash; each repaired file
+       is written beside its source as <strong>&lt;name&gt;-cleaned.mp4</strong>.</p>
+  </div>
+
+  <div id="toolWarn" class="warnbar">
+    ffmpeg / ffprobe were not found. Cleaning is disabled until they are on your PATH,
+    or placed in an <b>ffmpeg</b> folder beside the application.
+  </div>
+
+  <div class="row">
+    <label class="lbl" for="folder">Folder</label>
+    <input id="folder" class="ctrl-input" type="text" spellcheck="false"
+           placeholder="e.g. D:\ToClean\Full">
+    <button id="browseBtn" class="btn">Browse&hellip;</button>
+    <button id="rescanBtn" class="btn">Rescan</button>
+  </div>
+
+  <div class="row">
+    <label class="chk">
+      <input id="recursive" type="checkbox">
+      <span>Include subfolders</span>
+    </label>
+  </div>
+
+  <div class="lists">
+    <div class="pane">
+      <div class="pane-hdr">
+        <span class="ttl">Remaining</span>
+        <span class="cnt" id="remainCnt">0</span>
+      </div>
+      <div id="remainList" class="listbox"></div>
+    </div>
+
+    <div class="movers">
+      <button id="addBtn"    class="btn btn-sm">Add &gt;</button>
+      <button id="addAllBtn" class="btn btn-sm">All &gt;&gt;</button>
+      <button id="remBtn"    class="btn btn-sm">&lt; Remove</button>
+    </div>
+
+    <div class="pane">
+      <div class="pane-hdr">
+        <span class="ttl">Clean Queue</span>
+        <span class="cnt" id="queueCnt">0</span>
+      </div>
+      <div id="queueList" class="listbox queue"></div>
+    </div>
+  </div>
+
+  <div class="box">
+    <div class="box-hdr">
+      <span class="ttl">Equivalent command line</span>
+      <button id="copyCli" class="btn btn-sm" data-copy="cliBox">Copy</button>
+    </div>
+    <textarea id="cliBox" class="mono" readonly spellcheck="false"></textarea>
+  </div>
+
+  <div class="box">
+    <div class="box-hdr">
+      <span class="ttl">Log</span>
+      <button id="copyLog" class="btn btn-sm" data-copy="logBox">Copy</button>
+    </div>
+    <textarea id="logBox" class="mono" readonly spellcheck="false"></textarea>
+  </div>
+
+  <div id="prog" class="prog">
+    <span class="txt" id="progLabel">Working</span>
+    <div class="bar"><div class="fill" id="progFill"></div></div>
+    <span class="txt" id="progCount"></span>
+  </div>
+
+  <p class="note">
+    Candidates are queued automatically after a scan. <b>Remaining</b> holds everything else
+    &mdash; move a file back there to leave it alone. Files this app has already cleaned
+    (their <b>-cleaned.mp4</b> exists) are skipped on every scan; add one back to clean it
+    again and the new output gets a <b>-2</b> name instead of overwriting.
+  </p>
+
+  <div class="foot">
+    <button id="stopBtn"  class="btn" disabled>Stop</button>
+    <button id="cleanBtn" class="btn btn-accent" disabled>Clean Files</button>
+  </div>
+
+</div>
+
+<script src="/static/js/app.js?v={{ cachebust }}"></script>
+</body>
+</html>
