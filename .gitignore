@@ -15,4 +15,5 @@ packaging/windows/vendor/ffmpeg/
 *-cleaned-*.mp4
 *.part.ts
 scan-report*.csv
+GitShouldNotSee/
 RELEASE-NOTES*

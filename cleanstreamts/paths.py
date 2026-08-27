@@ -24,12 +24,19 @@ def app_base_dir():
 
 def resource_dir():
     """
-    Directory containing bundled templates/static.
+    Directory containing this package's bundled templates/ and static/.
 
-    PyInstaller unpacks datas into sys._MEIPASS, which is NOT the exe
-    directory - so this is a different question from app_base_dir() and needs
-    its own answer.
+    PyInstaller unpacks datas into sys._MEIPASS, and the spec places this
+    package's data under a "cleanstreamts" subfolder there - mirroring the
+    source layout - so the resource root is _MEIPASS/cleanstreamts, NOT
+    _MEIPASS itself.
+
+    Getting this wrong does not fail the build. The files are present and a
+    manifest check confirms it; the app simply looks one directory too high
+    and Flask raises TemplateNotFound the first time a window opens. Only
+    running the packaged exe catches it, which is why cli.py has a
+    --self-check that resolves these paths for real.
     """
     if getattr(sys, "frozen", False):
-        return Path(getattr(sys, "_MEIPASS", Path(sys.executable).parent))
+        return Path(getattr(sys, "_MEIPASS", Path(sys.executable).parent)) / "cleanstreamts"
     return Path(__file__).resolve().parent

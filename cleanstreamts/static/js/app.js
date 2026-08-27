@@ -144,6 +144,11 @@
 
     var mySeq = ++scanSeq;
 
+    // A new scan means a new log. The server clears its copy; clear ours NOW
+    // so the box responds to the click instead of waiting for the next poll.
+    el("logBox").value = "";
+    lastLogText = null;
+
     remaining = [];
     queue = [];
     allCandidates = [];
@@ -168,7 +173,13 @@
 
   // ---- state polling -------------------------------------------------
 
-  var lastLogLen = -1;
+  // The last SERVER log text we rendered. Compared by CONTENT, not length:
+  // two successive scans routinely produce the same number of lines
+  // ("Scanning X" + "Scan complete"), and a length check cannot see that the
+  // text changed - which left the previous folder's log on screen after a
+  // Rescan. Tracking the server text (rather than the box's value) also
+  // keeps client-only appendLog() lines from being wiped by every poll.
+  var lastLogText = null;
 
   function refresh(adopt) {
     return fetch("/api/state").then(function (r) { return r.json(); }).then(function (st) {
@@ -209,10 +220,11 @@
         prog.className = "prog";
       }
 
-      if (st.log && st.log.length !== lastLogLen) {
-        lastLogLen = st.log.length;
+      var logText = (st.log || []).join("\n");
+      if (logText !== lastLogText) {
+        lastLogText = logText;
         var box = el("logBox");
-        box.value = st.log.join("\n");
+        box.value = logText;
         box.scrollTop = box.scrollHeight;
       }
 
@@ -326,6 +338,14 @@
 
   el("stopBtn").addEventListener("click", function () {
     post("/api/cancel").then(pollNow);
+  });
+
+  // Save The Children. The server opens the system default browser
+  // (webbrowser.open) - window.open inside a WebView2 window would try to
+  // spawn another app window instead of the user's browser.
+  el("donateBtn").addEventListener("click", function () {
+    post("/api/open-url",
+         { url: "https://www.savethechildren.org/us/ways-to-help/ways-to-give" });
   });
 
   wireCopy(el("copyCli"));

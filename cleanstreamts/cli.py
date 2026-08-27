@@ -294,6 +294,117 @@ def cmd_extract_decoy(args):
     return 0
 
 
+def cmd_self_check(_args):
+    """
+    Verify a packaged build can actually find everything it needs.
+
+    This exists because of a real failure: the spec bundled templates and
+    static correctly, a manifest check confirmed they were present, and the
+    app still died with TemplateNotFound on first launch - because the code
+    resolved the resource root one directory too high. Checking that files
+    are IN the bundle is not the same as checking the app can FIND them.
+
+    So this resolves the same paths the running app resolves, opens the
+    files, imports every module, and runs the bundled ffmpeg/ffprobe. The
+    packager runs it against the built exe, so a broken bundle fails the
+    build instead of the user's first launch.
+    """
+    failures = []
+    warnings = []
+    checks = 0
+
+    def check(label, ok, detail="", fatal=True):
+        """
+        fatal=False marks an advisory check. ffmpeg absent from PATH means
+        the user still has a step to do, not that the install is broken -
+        so it must not fail a build or an install that is otherwise sound.
+        A missing template genuinely is broken, and does.
+        """
+        nonlocal checks
+        checks += 1
+        if ok:
+            print("  PASS  %s" % label)
+        elif fatal:
+            failures.append(label)
+            print("  FAIL  %s%s" % (label, ("  [%s]" % detail) if detail else ""))
+        else:
+            warnings.append(label)
+            print("  WARN  %s%s" % (label, ("  [%s]" % detail) if detail else ""))
+
+    print("%s %s self-check" % (APP_NAME, __version__))
+    print("  frozen: %s" % bool(getattr(sys, "frozen", False)))
+    print("")
+
+    print("Modules")
+    for name in ("cleanstreamts.core", "cleanstreamts.repair",
+                 "cleanstreamts.cli", "cleanstreamts.paths",
+                 "cleanstreamts.winproc", "cleanstreamts.console_buffer"):
+        try:
+            __import__(name)
+            check(name, True)
+        except Exception as exc:
+            check(name, False, str(exc))
+
+    print("")
+    print("Bundled resources")
+    from .paths import resource_dir
+    res = resource_dir()
+    print("  resource_dir: %s" % res)
+    for rel in (os.path.join("templates", "ui.html"),
+                os.path.join("static", "css", "app.css"),
+                os.path.join("static", "js", "app.js")):
+        path = os.path.join(str(res), rel)
+        ok = os.path.isfile(path)
+        check(rel, ok, "not found at %s" % path)
+
+    print("")
+    print("Flask template loader")
+    # Resolve the way the server does, not the way we hope it does.
+    try:
+        from flask import Flask
+        from pathlib import Path as _P
+        app = Flask("selfcheck",
+                    template_folder=str(_P(res) / "templates"),
+                    static_folder=str(_P(res) / "static"))
+        with app.app_context():
+            app.jinja_env.get_template("ui.html")
+        check("ui.html loads through Jinja", True)
+    except Exception as exc:
+        check("ui.html loads through Jinja", False, "%s: %s" % (type(exc).__name__, exc))
+
+    print("")
+    print("External tools")
+    from .paths import app_base_dir
+    ffmpeg_bin, ffprobe_bin = repair_mod.resolve_tools(app_base_dir())
+    ok, message = repair_mod.check_tools(ffmpeg_bin, ffprobe_bin)
+    check("ffmpeg/ffprobe present", ok, message or "", fatal=False)
+    if ok:
+        print("        ffmpeg:  %s" % ffmpeg_bin)
+        print("        ffprobe: %s" % ffprobe_bin)
+
+    print("")
+    print("=" * 52)
+    if failures:
+        print("  %d of %d checks FAILED" % (len(failures), checks))
+        for f in failures:
+            print("    - %s" % f)
+        print("=" * 52)
+        return 1
+    if warnings:
+        print("  %d checks passed, %d warning(s)" % (checks - len(warnings), len(warnings)))
+        for w in warnings:
+            print("    - %s" % w)
+        print("")
+        print("  Install ffmpeg and ffprobe, or put them in an 'ffmpeg' folder")
+        print("  beside the application. Scanning works without them; cleaning")
+        print("  does not.")
+        print("=" * 52)
+        return 0
+    print("  all %d checks passed" % checks)
+    print("=" * 52)
+    return 0
+
+
 # ---------------------------------------------------------------------------
 # gui
 # ---------------------------------------------------------------------------
@@ -341,6 +452,10 @@ def build_parser():
 
     p_gui = sub.add_parser("gui", help="open the window (default)")
     p_gui.set_defaults(func=cmd_gui)
+
+    p_self = sub.add_parser("self-check",
+                            help="verify a packaged build can find its resources and tools")
+    p_self.set_defaults(func=cmd_self_check)
 
     p_scan = sub.add_parser("scan", parents=[common_scan],
                             help="report what is in a folder")

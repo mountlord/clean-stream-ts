@@ -1,8 +1,4 @@
 ;!@Install@!UTF-8!
-Title="CleanStreamTS"
-BeginPrompt="Install CleanStreamTS to this folder?\n\nAn application folder will be created here. Nothing is written to the registry and nothing is installed system-wide - to uninstall, delete the folder."
-ExtractDialogText="Extracting CleanStreamTS..."
-ExtractTitle="CleanStreamTS"
-GUIMode="1"
-OverwriteMode="0"
+Title="CleanStreamTS Installer"
+RunProgram="install.cmd"
 ;!@InstallEnd@!

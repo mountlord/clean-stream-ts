@@ -202,6 +202,39 @@ The UI does not re-implement scanning or repair. It calls the same code, and the
 
 ### Self-check
 
+Two different checks, for two different questions.
+
+**Does a packaged build work?**
+
+```powershell
+CleanStreamTS-cli self-check
+```
+
+Resolves the bundled templates and static the same way the running app does,
+loads `ui.html` through Jinja for real, imports every module, and locates
+ffmpeg/ffprobe. The packager runs this against the built exe and refuses to
+package a bundle that fails it.
+
+It runs at two gates, so a broken bundle cannot reach a user:
+
+| Gate | What it proves |
+|---|---|
+| Packager, after PyInstaller | the **built** exe finds its resources; a failure stops the build |
+| Installer, after extraction | the **installed** exe finds them on the user's machine |
+
+Missing ffmpeg is reported as a warning, not a failure -- scanning works
+without it and the user has a documented step to take. A missing template is
+a failure, because the app is broken.
+
+This exists because of a shipped failure. The spec bundled the UI correctly
+and a manifest check confirmed the files were present -- but the code
+resolved the resource root one directory too high, so the app died with
+`TemplateNotFound` on first launch. Checking that files are *in* the bundle
+is not the same as checking the app can *find* them, and only running the
+packaged executable tells you which.
+
+**Is the detection and repair logic correct?**
+
 ```powershell
 python tests\selfcheck.py
 ```

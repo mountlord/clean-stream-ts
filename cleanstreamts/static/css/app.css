@@ -346,6 +346,34 @@ html, body {
   align-items: center;
   justify-content: flex-end;
   gap: 8px;
+  position: relative;   /* anchors the centered donate button */
+}
+
+/* Save The Children - centered in the footer, independent of the
+   right-aligned action buttons. Same placement as ChitraMaya's. */
+.btn-donate {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #47131a;
+  border: 1px solid #9e3540;
+  color: #f2dcdc;
+  font-family: "Cascadia Mono", Consolas, monospace;
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  border-radius: 999px;
+  padding: 7px 16px;
+}
+
+.btn-donate:hover {
+  background: #571821;
+  border-color: #c2434f;
+  color: #ffffff;
+}
+
+.donate-heart {
+  color: #ff5a7a;
+  margin-right: 2px;
 }
 
 .warnbar {
